@@ -44,9 +44,13 @@ public class WebConfigurer implements ServletContextInitializer, EmbeddedServlet
     @Autowired(required = false)
     private MetricRegistry metricRegistry;
 
+    private HazelcastInstance hazelcastInstance;
+
     // Hazelcast instance is injected to force its initialization before the Servlet filter uses it.
     @Inject
-    private HazelcastInstance hazelcastInstance;
+    public void setHazelcastInstance(HazelcastInstance hazelcastInstance) {
+        this.hazelcastInstance = hazelcastInstance;
+    }
 
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
@@ -74,7 +78,7 @@ public class WebConfigurer implements ServletContextInitializer, EmbeddedServlet
 
         FilterRegistration.Dynamic hazelcastWebFilter = servletContext.addFilter("hazelcastWebFilter", new SpringAwareWebFilter());
         Map<String, String> parameters = new HashMap<>();
-        parameters.put("instance-name", "hzjHipster");
+        parameters.put("instance-name", hazelcastInstance.getName());
         // Name of the distributed map storing your web session objects
         parameters.put("map-name", "clustered-http-sessions");
 

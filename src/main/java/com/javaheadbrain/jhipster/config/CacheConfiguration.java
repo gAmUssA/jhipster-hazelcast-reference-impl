@@ -10,6 +10,7 @@ import com.hazelcast.config.MaxSizeConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.*;
@@ -23,12 +24,11 @@ import javax.inject.Inject;
 @SuppressWarnings("unused")
 @Configuration
 @EnableCaching
-@AutoConfigureAfter(value = { MetricsConfiguration.class, DatabaseConfiguration.class })
+@AutoConfigureBefore(value = {DatabaseConfiguration.class, WebConfigurer.class})
+@AutoConfigureAfter(value = { MetricsConfiguration.class })
 public class CacheConfiguration {
 
     private final Logger log = LoggerFactory.getLogger(CacheConfiguration.class);
-
-    private static HazelcastInstance hazelcastInstance;
 
     @Inject
     private Environment env;
@@ -68,9 +68,7 @@ public class CacheConfiguration {
         config.getMapConfigs().put("com.javaheadbrain.jhipster.domain.*", initializeDomainMapConfig(jHipsterProperties));
         config.getMapConfigs().put("clustered-http-sessions", initializeClusteredSession(jHipsterProperties));
 
-        hazelcastInstance = HazelcastInstanceFactory.newHazelcastInstance(config);
-
-        return hazelcastInstance;
+        return Hazelcast.newHazelcastInstance(config);
     }
 
     private MapConfig initializeDefaultMapConfig() {
@@ -107,13 +105,6 @@ public class CacheConfiguration {
         MapConfig mapConfig = new MapConfig();
         mapConfig.setTimeToLiveSeconds(jHipsterProperties.getCache().getHazelcast().getTimeToLiveSeconds());
         return mapConfig;
-    }
-
-    /**
-    * @return the unique instance.
-    */
-    public static HazelcastInstance getHazelcastInstance() {
-        return hazelcastInstance;
     }
 
     private MapConfig initializeClusteredSession(JHipsterProperties jHipsterProperties) {
