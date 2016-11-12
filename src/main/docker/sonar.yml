@@ -1,0 +1,8 @@
+version: '2'
+services:
+    hzjhipster-sonar:
+        container_name: hzjhipster-sonar
+        image: sonarqube:6.0-alpine
+        ports:
+            - 9000:9000
+            - 9092:9092
